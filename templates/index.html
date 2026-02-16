@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sakthi Veg - Billing v3.1</title>
+    <title>Sakthi Veg - Billing v3.2</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -16,7 +16,7 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12 p-4">
-            <h2 class="mb-4 text-center"><i class="fas fa-file-invoice-dollar text-success"></i> SAKTHI VEG & FRUITS - Billing</h2>
+            <h2 class="mb-4 text-center text-success"><i class="fas fa-file-invoice-dollar"></i> SAKTHI VEG & FRUITS - Billing</h2>
             
             <div class="row">
                 <div class="col-md-5">
@@ -79,7 +79,7 @@ function addToBill() {
     if (!name || !weight) return alert("Select item and enter weight!");
 
     const total = parseFloat(price) * parseFloat(weight);
-    billItems.push({ name, price: parseFloat(price), weight: parseFloat(weight), total: total });
+    billItems.push({ name: name, price: parseFloat(price), weight: parseFloat(weight), total: total });
     updateUI();
     document.getElementById('item_weight').value = '';
 }
@@ -112,22 +112,25 @@ function sendWhatsApp() {
     if (phone.length < 10) return alert("Enter a valid 10-digit phone number!");
     if (billItems.length === 0) return alert("Add some items to the bill first!");
 
-    // Cleaned Message Logic - No Nesting Errors
+    // 1. மெசேஜ் ஆரம்பம்
     let message = "*SAKTHI VEG & FRUITS*%0A";
     message += "--------------------------%0A";
     message += `*Customer:* ${name}%0A`;
     message += "--------------------------%0A";
     
+    // 2. பொருட்கள் வரிசை (சரியான லூப்)
     billItems.forEach((item, index) => {
         message += `${index + 1}. *${item.name}*%0A`;
         message += `   ${item.weight}kg x ₹${item.price} = *₹${item.total.toFixed(2)}*%0A`;
     });
     
+    // 3. மெசேஜ் முடிவு
     message += "--------------------------%0A";
     message += `*Grand Total: ₹${total}*%0A`;
     message += "--------------------------%0A";
     message += "Thank you! Visit again.";
 
+    // 4. லிங்க் ஓபன் செய்தல்
     window.open(`https://wa.me/91${phone}?text=${message}`, '_blank');
 }
 </script>
