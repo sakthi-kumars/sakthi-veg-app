@@ -7,41 +7,46 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .bill-card { border-radius: 12px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .table thead { background-color: #198754; color: white; }
     </style>
 </head>
 <body>
 <div class="container py-4">
-    <h2 class="text-center text-success mb-4">SAKTHI VEG & FRUITS</h2>
+    <h2 class="text-center text-success mb-4"><i class="fas fa-leaf"></i> SAKTHI VEG & FRUITS</h2>
     <div class="row">
         <div class="col-md-5">
             <div class="card bill-card p-4 mb-4">
+                <h5><i class="fas fa-user"></i> Customer</h5>
                 <input type="text" id="cust_name" class="form-control mb-2" placeholder="Customer Name">
-                <input type="text" id="cust_phone" class="form-control mb-3" placeholder="Phone Number">
+                <input type="text" id="cust_phone" class="form-control mb-3" placeholder="10 Digit Phone Number">
                 <hr>
+                <h5><i class="fas fa-plus-circle"></i> Add Item</h5>
                 <select id="item_select" class="form-select mb-2">
-                    <option value="">-- Choose Item --</option>
+                    <option value="">-- Select --</option>
                     {% for i in inventory %}
                     <option value="{{ i.item_en }}" data-price="{{ i.price }}">{{ i.item_en }} (₹{{ i.price }}/kg)</option>
                     {% endfor %}
                 </select>
-                <input type="number" step="0.01" id="item_weight" class="form-control mb-3" placeholder="Weight in kg">
-                <button class="btn btn-primary w-100" onclick="addToBill()">Add to List</button>
+                <input type="number" step="0.01" id="item_weight" class="form-control mb-3" placeholder="Weight (kg)">
+                <button class="btn btn-primary w-100" onclick="addToBill()">Add to Bill</button>
             </div>
         </div>
 
         <div class="col-md-7">
             <div class="card bill-card p-4">
+                <h5><i class="fas fa-receipt"></i> Invoice Preview</h5>
                 <table class="table" id="bill_table">
                     <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
                     <tbody></tbody>
                 </table>
-                <div class="text-end">
-                    <h4 class="text-success">Total: ₹<span id="grand_total">0.00</span></h4>
-                    <button class="btn btn-success w-100 mt-3" onclick="sendWhatsApp()">Send WhatsApp Bill</button>
-                    <button class="btn btn-outline-danger w-100 mt-2" onclick="location.reload()">Clear All</button>
+                <div class="text-end border-top pt-3">
+                    <h3 class="text-success">Grand Total: ₹<span id="grand_total">0.00</span></h3>
+                    <button class="btn btn-success w-100 mt-3 btn-lg" onclick="sendWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> SEND BILL TO WHATSAPP
+                    </button>
+                    <button class="btn btn-link text-danger w-100 mt-2" onclick="location.reload()">Reset Everything</button>
                 </div>
             </div>
         </div>
@@ -57,10 +62,11 @@ function addToBill() {
     const price = select.options[select.selectedIndex].getAttribute('data-price');
     const weight = document.getElementById('item_weight').value;
 
-    if (!name || !weight) return alert("Select item and weight!");
+    if (!name || !weight || weight <= 0) return alert("Select item and enter correct weight!");
 
     const total = parseFloat(price) * parseFloat(weight);
     billItems.push({ name, price, weight, total });
+    
     updateUI();
     document.getElementById('item_weight').value = '';
 }
@@ -70,7 +76,7 @@ function updateUI() {
     tbody.innerHTML = '';
     let grandTotal = 0;
     billItems.forEach(item => {
-        tbody.innerHTML += `<tr><td>${item.name}</td><td>${item.price}</td><td>${item.weight}</td><td>${item.total.toFixed(2)}</td></tr>`;
+        tbody.innerHTML += `<tr><td>${item.name}</td><td>₹${item.price}</td><td>${item.weight} kg</td><td>₹${item.total.toFixed(2)}</td></tr>`;
         grandTotal += item.total;
     });
     document.getElementById('grand_total').innerText = grandTotal.toFixed(2);
@@ -81,26 +87,29 @@ function sendWhatsApp() {
     const phone = document.getElementById('cust_phone').value;
     const total = document.getElementById('grand_total').innerText;
 
-    if (!phone) return alert("Enter Phone Number!");
-    if (billItems.length === 0) return alert("No items in bill!");
+    if (!phone || phone.length < 10) return alert("Enter a valid 10-digit Phone Number!");
+    if (billItems.length === 0) return alert("Your bill is empty!");
 
-    // Simple Message Construction without complex loops inside strings
-    let billText = "*SAKTHI VEG & FRUITS*%0A";
-    billText += "----------------------------%0A";
-    billText += "Customer: " + name + "%0A";
-    billText += "----------------------------%0A";
+    // 1. மெசேஜை சாதாரண டெக்ஸ்ட் ஆகத் தயார் செய்தல்
+    let plainText = "SAKTHI VEG & FRUITS\n";
+    plainText += "----------------------------\n";
+    plainText += "Customer: " + name + "\n";
+    plainText += "----------------------------\n";
     
-    for(let i=0; i<billItems.length; i++) {
-        billText += (i+1) + ". " + billItems[i].name + ": " + billItems[i].weight + "kg x ₹" + billItems[i].price + " = ₹" + billItems[i].total.toFixed(2) + "%0A";
-    }
+    billItems.forEach((item, index) => {
+        plainText += (index + 1) + ". " + item.name + ": " + item.weight + "kg x ₹" + item.price + " = ₹" + item.total.toFixed(2) + "\n";
+    });
     
-    billText += "----------------------------%0A";
-    billText += "*Grand Total: ₹" + total + "*%0A";
-    billText += "----------------------------%0A";
-    billText += "Thank you! Visit again.";
+    plainText += "----------------------------\n";
+    plainText += "Grand Total: ₹" + total + "\n";
+    plainText += "----------------------------\n";
+    plainText += "Thank you! Visit again.";
 
-    // URL Encoding fix
-    const waUrl = "https://wa.me/91" + phone + "?text=" + billText;
+    // 2. encodeURIComponent - இதுதான் மெசேஜை வாட்ஸ்அப்பிற்குப் புரியும் மொழியில் மாற்றும்
+    const encodedMsg = encodeURIComponent(plainText);
+    const waUrl = "https://wa.me/91" + phone + "?text=" + encodedMsg;
+
+    // 3. லிங்க் ஓபன் செய்தல்
     window.open(waUrl, '_blank');
 }
 </script>
