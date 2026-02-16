@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sakthi Veg - Billing v3.0</title>
+    <title>Sakthi Veg - Billing v3.1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -24,9 +24,7 @@
                         <h5><i class="fas fa-user"></i> Customer Info</h5>
                         <input type="text" id="cust_name" class="form-control mb-2" placeholder="Customer Name">
                         <input type="text" id="cust_phone" class="form-control mb-3" placeholder="Phone (10 Digits)">
-                        
                         <hr>
-                        
                         <h5><i class="fas fa-cart-plus"></i> Add Items</h5>
                         <select id="item_select" class="form-select mb-2">
                             <option value="">-- Choose Item --</option>
@@ -57,7 +55,7 @@
                             <tbody></tbody>
                         </table>
                         <div class="text-end mt-3">
-                            <h3 class="text-success">Total: ₹<span id="grand_total">0</span></h3>
+                            <h3 class="text-success">Total: ₹<span id="grand_total">0.00</span></h3>
                             <button class="btn btn-success mt-3 btn-lg w-100" onclick="sendWhatsApp()">
                                 <i class="fab fa-whatsapp"></i> Send Bill to Customer
                             </button>
@@ -68,7 +66,44 @@
         </div>
     </div>
 </div>
-    
+
+<script>
+let billItems = [];
+
+function addToBill() {
+    const select = document.getElementById('item_select');
+    const name = select.value;
+    const price = select.options[select.selectedIndex].getAttribute('data-price');
+    const weight = document.getElementById('item_weight').value;
+
+    if (!name || !weight) return alert("Select item and enter weight!");
+
+    const total = parseFloat(price) * parseFloat(weight);
+    billItems.push({ name, price, weight, total });
+    updateUI();
+    document.getElementById('item_weight').value = '';
+}
+
+function updateUI() {
+    const tbody = document.querySelector('#bill_table tbody');
+    tbody.innerHTML = '';
+    let grandTotal = 0;
+
+    billItems.forEach(item => {
+        tbody.innerHTML += `<tr><td>${item.name}</td><td>₹${item.price}</td><td>${item.weight} kg</td><td>₹${item.total.toFixed(2)}</td></tr>`;
+        grandTotal += item.total;
+    });
+
+    document.getElementById('grand_total').innerText = grandTotal.toFixed(2);
+}
+
+function clearBill() {
+    billItems = [];
+    updateUI();
+    document.getElementById('cust_name').value = '';
+    document.getElementById('cust_phone').value = '';
+}
+
 function sendWhatsApp() {
     const name = document.getElementById('cust_name').value || "Customer";
     const phone = document.getElementById('cust_phone').value;
@@ -77,13 +112,12 @@ function sendWhatsApp() {
     if (phone.length < 10) return alert("Enter a valid 10-digit phone number!");
     if (billItems.length === 0) return alert("Add some items to the bill first!");
 
-    // பில் செய்தியைத் தயார் செய்தல்
+    // Cleaned Message Logic
     let message = "*SAKTHI VEG & FRUITS*%0A";
     message += "--------------------------%0A";
     message += `*Customer:* ${name}%0A`;
     message += "--------------------------%0A";
     
-    // ஒவ்வொரு பொருளையும் வரிசையாகச் சேர்த்தல்
     billItems.forEach((item, index) => {
         message += `${index + 1}. *${item.name}*%0A`;
         message += `   ${item.weight}kg x ₹${item.price} = *₹${item.total.toFixed(2)}*%0A`;
@@ -94,9 +128,8 @@ function sendWhatsApp() {
     message += "--------------------------%0A";
     message += "Thank you! Visit again.";
 
-    // வாட்ஸ்அப் லிங்க்
     window.open(`https://wa.me/91${phone}?text=${message}`, '_blank');
 }
+</script>
 </body>
 </html>
-
