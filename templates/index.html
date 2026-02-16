@@ -112,25 +112,22 @@ function sendWhatsApp() {
     if (phone.length < 10) return alert("Enter a valid 10-digit phone number!");
     if (billItems.length === 0) return alert("Add some items to the bill first!");
 
-    // 1. மெசேஜ் ஆரம்பம்
+    // மெசேஜ் உருவாக்கம் (Clean & Safe)
     let message = "*SAKTHI VEG & FRUITS*%0A";
     message += "--------------------------%0A";
     message += `*Customer:* ${name}%0A`;
     message += "--------------------------%0A";
     
-    // 2. பொருட்கள் வரிசை (சரியான லூப்)
     billItems.forEach((item, index) => {
         message += `${index + 1}. *${item.name}*%0A`;
         message += `   ${item.weight}kg x ₹${item.price} = *₹${item.total.toFixed(2)}*%0A`;
     });
     
-    // 3. மெசேஜ் முடிவு
     message += "--------------------------%0A";
     message += `*Grand Total: ₹${total}*%0A`;
     message += "--------------------------%0A";
     message += "Thank you! Visit again.";
 
-    // 4. லிங்க் ஓபன் செய்தல்
     window.open(`https://wa.me/91${phone}?text=${message}`, '_blank');
 }
 </script>
