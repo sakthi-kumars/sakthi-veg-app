@@ -121,7 +121,7 @@ function clearBill() {
 }
 
 function sendWhatsApp() {
-    const name = document.getElementById('cust_name').value || "Valued Customer";
+    const name = document.getElementById('cust_name').value || "Customer";
     const phone = document.getElementById('cust_phone').value;
     const total = document.getElementById('grand_total').innerText;
 
@@ -134,7 +134,7 @@ function sendWhatsApp() {
         return;
     }
 
-    // மெசேஜ் உருவாக்கம் (Clean Text construction)
+    // மெசேஜ் உருவாக்கம் (Clean text logic)
     let message = "*SAKTHI VEG & FRUITS*%0A";
     message += "--------------------------%0A";
     message += `*Customer:* ${name}%0A`;
