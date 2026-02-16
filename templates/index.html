@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sakthi Veg - Billing v3.3</title>
+    <title>Sakthi Veg - Billing v3.4</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -74,7 +74,7 @@ function addToBill() {
     const price = select.options[select.selectedIndex].getAttribute('data-price');
     const weight = document.getElementById('item_weight').value;
 
-    if (!name || !weight) return alert("Select item and enter weight!");
+    if (!name || !weight || weight <= 0) return alert("Select item and enter a valid weight!");
 
     const total = parseFloat(price) * parseFloat(weight);
     billItems.push({ name: name, price: parseFloat(price), weight: parseFloat(weight), total: total });
@@ -108,22 +108,15 @@ function sendWhatsApp() {
     if (phone.length < 10) return alert("Enter a valid 10-digit phone number!");
     if (billItems.length === 0) return alert("Add some items to the bill first!");
 
-    let message = "*SAKTHI VEG & FRUITS*%0A";
-    message += "--------------------------%0A";
-    message += `*Customer:* ${name}%0A`;
-    message += "--------------------------%0A";
-    
+    // மெசேஜ் தயார் செய்தல் - Clean Formatting
+    let billDetails = "";
     billItems.forEach((item, index) => {
-        message += `${index + 1}. *${item.name}*%0A`;
-        message += `   ${item.weight}kg x ₹${item.price} = *₹${item.total.toFixed(2)}*%0A`;
+        billDetails += `${index + 1}. ${item.name}: ${item.weight}kg x ₹${item.price} = ₹${item.total.toFixed(2)}%0A`;
     });
-    
-    message += "--------------------------%0A";
-    message += `*Grand Total: ₹${total}*%0A`;
-    message += "--------------------------%0A";
-    message += "Thank you! Visit again.";
 
-    window.open(`https://wa.me/91${phone}?text=${message}`, '_blank');
+    const finalMsg = `*SAKTHI VEG & FRUITS*%0A--------------------------%0A*Customer:* ${name}%0A--------------------------%0A${billDetails}--------------------------%0A*Grand Total: ₹${total}*%0A--------------------------%0AThank you! Visit again.`;
+
+    window.open(`https://wa.me/91${phone}?text=${finalMsg}`, '_blank');
 }
 </script>
 </body>
