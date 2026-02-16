@@ -7,64 +7,58 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .bill-card { border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .sidebar { background: #2c3e50; min-height: 100vh; color: white; }
+        .table thead { background-color: #27ae60; color: white; }
     </style>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-2 sidebar p-4 text-center">
-            <h3 class="text-success"><i class="fas fa-leaf"></i> SAKTHI</h3>
-            <hr>
-            <button class="btn btn-outline-light w-100 mb-2" onclick="location.reload()">Refresh App</button>
-        </div>
-
-        <div class="col-md-10 p-4">
-            <h2 class="mb-4 text-dark"><i class="fas fa-calculator"></i> Digital Billing Counter</h2>
+        <div class="col-md-12 p-4">
+            <h2 class="mb-4 text-center"><i class="fas fa-file-invoice-dollar text-success"></i> SAKTHI VEG & FRUITS - Billing</h2>
             
             <div class="row">
                 <div class="col-md-5">
                     <div class="card bill-card p-4 mb-4">
-                        <h5><i class="fas fa-user"></i> Customer Details</h5>
+                        <h5><i class="fas fa-user"></i> Customer Info</h5>
                         <input type="text" id="cust_name" class="form-control mb-2" placeholder="Customer Name">
-                        <input type="text" id="cust_phone" class="form-control mb-3" placeholder="Phone Number">
+                        <input type="text" id="cust_phone" class="form-control mb-3" placeholder="Phone (10 Digits)">
                         
                         <hr>
                         
-                        <h5><i class="fas fa-shopping-basket"></i> Select Items</h5>
+                        <h5><i class="fas fa-cart-plus"></i> Add Items</h5>
                         <select id="item_select" class="form-select mb-2">
-                            <option value="">-- Choose Vegetable --</option>
+                            <option value="">-- Choose Item --</option>
                             {% for i in inventory %}
                             <option value="{{ i.item_en }}" data-price="{{ i.price }}">{{ i.item_en }} (₹{{ i.price }}/kg)</option>
                             {% endfor %}
                         </select>
-                        <input type="number" id="item_weight" class="form-control mb-3" placeholder="Weight in Kg (e.g. 1.5)">
+                        <input type="number" id="item_weight" class="form-control mb-3" placeholder="Weight (e.g., 1.5)">
                         <button class="btn btn-primary w-100" onclick="addToBill()">Add to Bill</button>
                     </div>
                 </div>
 
                 <div class="col-md-7">
                     <div class="card bill-card p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5><i class="fas fa-file-invoice-dollar"></i> Current Bill</h5>
-                            <button class="btn btn-sm btn-danger" onclick="clearBill()">Clear</button>
+                        <div class="d-flex justify-content-between mb-3">
+                            <h5><i class="fas fa-receipt"></i> Current Invoice</h5>
+                            <button class="btn btn-sm btn-danger" onclick="clearBill()">Clear All</button>
                         </div>
-                        <table class="table" id="bill_table">
+                        <table class="table table-hover" id="bill_table">
                             <thead>
                                 <tr>
                                     <th>Item</th>
                                     <th>Price</th>
-                                    <th>Weight</th>
+                                    <th>Qty</th>
                                     <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
-                        <div class="text-end">
-                            <h4 class="text-success">Grand Total: ₹<span id="grand_total">0</span></h4>
-                            <button class="btn btn-success mt-3 w-100 py-2" onclick="sendWhatsApp()">
+                        <div class="text-end mt-3">
+                            <h3 class="text-success">Total: ₹<span id="grand_total">0</span></h3>
+                            <button class="btn btn-success mt-3 btn-lg w-100" onclick="sendWhatsApp()">
                                 <i class="fab fa-whatsapp"></i> Send Bill to Customer
                             </button>
                         </div>
@@ -84,31 +78,30 @@ function addToBill() {
     const price = select.options[select.selectedIndex].getAttribute('data-price');
     const weight = document.getElementById('item_weight').value;
 
-    if (!name || !weight) return alert("Please select item and weight!");
+    if (!name || !weight) return alert("Select item and enter weight!");
 
     const total = parseFloat(price) * parseFloat(weight);
     billItems.push({ name, price, weight, total });
-    updateBillTable();
+    updateUI();
+    document.getElementById('item_weight').value = '';
 }
 
-function updateBillTable() {
+function updateUI() {
     const tbody = document.querySelector('#bill_table tbody');
     tbody.innerHTML = '';
     let grandTotal = 0;
 
     billItems.forEach(item => {
-        tbody.innerHTML += `<tr><td>${item.name}</td><td>₹${item.price}</td><td>${item.weight} kg</td><td>₹${item.total}</td></tr>`;
+        tbody.innerHTML += `<tr><td>${item.name}</td><td>₹${item.price}</td><td>${item.weight} kg</td><td>₹${item.total.toFixed(2)}</td></tr>`;
         grandTotal += item.total;
     });
 
-    document.getElementById('grand_total').innerText = grandTotal;
+    document.getElementById('grand_total').innerText = grandTotal.toFixed(2);
 }
 
 function clearBill() {
     billItems = [];
-    updateBillTable();
-    document.getElementById('cust_name').value = '';
-    document.getElementById('cust_phone').value = '';
+    updateUI();
 }
 
 function sendWhatsApp() {
@@ -116,11 +109,11 @@ function sendWhatsApp() {
     const phone = document.getElementById('cust_phone').value;
     const total = document.getElementById('grand_total').innerText;
 
-    if (!phone) return alert("Please enter customer phone number!");
+    if (phone.length < 10) return alert("Enter a valid 10-digit phone number!");
 
     let message = `*SAKTHI VEG & FRUITS*%0A--------------------------%0AHello ${name}, your bill details:%0A`;
     billItems.forEach(item => {
-        message += `• ${item.name}: ${item.weight}kg x ₹${item.price} = ₹${item.total}%0A`;
+        message += `• ${item.name}: ${item.weight}kg x ₹${item.price} = ₹${item.total.toFixed(2)}%0A`;
     });
     message += `--------------------------%0A*Grand Total: ₹${total}*%0AThank you! Visit again.`;
 
