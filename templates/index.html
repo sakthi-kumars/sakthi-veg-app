@@ -79,7 +79,7 @@ function addToBill() {
     if (!name || !weight) return alert("Select item and enter weight!");
 
     const total = parseFloat(price) * parseFloat(weight);
-    billItems.push({ name, price, weight, total });
+    billItems.push({ name, price: parseFloat(price), weight: parseFloat(weight), total: total });
     updateUI();
     document.getElementById('item_weight').value = '';
 }
@@ -112,7 +112,7 @@ function sendWhatsApp() {
     if (phone.length < 10) return alert("Enter a valid 10-digit phone number!");
     if (billItems.length === 0) return alert("Add some items to the bill first!");
 
-    // Cleaned Message Logic
+    // Cleaned Message Logic - No Nesting Errors
     let message = "*SAKTHI VEG & FRUITS*%0A";
     message += "--------------------------%0A";
     message += `*Customer:* ${name}%0A`;
